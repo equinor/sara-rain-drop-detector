@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sara-rain-drop-detector
+  description: The SARA Rain Drop Detector provides an automated process to determine whether rain drops are present in an image, using a trained YOLOv11 detection model.
+  annotations:
+    github.com/project-slug: equinor/sara-rain-drop-detector
+    github.com/team-slug: equinor/eq-robot-developer
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/eq-robot-developer
+  system: system:default/flotilla

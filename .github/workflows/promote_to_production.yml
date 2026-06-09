@@ -1,0 +1,44 @@
+name: Promote to Production
+
+# Only one workflow in a concurrency group may run at a time
+concurrency:
+  group: production-concurrency
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get_staging_version:
+    name: Get version from staging
+    outputs:
+      versionTag: ${{ steps.get_version_tag.outputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout infrastructure
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6
+        with:
+          ref: main
+          repository: equinor/analytics-infrastructure
+          ssh-key: ${{ secrets.ANALYTICS_INFRASTRUCTURE_DEPLOY_KEY }}
+
+      - name: Get Sara Rain Drop Detector version in staging
+        id: get_version_tag
+        run: |
+          TAG_LINE_NUMBER=$(($(grep -n "auroraprodacr.azurecr.io/robotics/sara-rain-drop-detector" k8s_kustomize/overlays/staging/kustomization.yaml |  cut --delimiter=":" --fields=1)+1))
+          VERSION_TAG=$(sed -n "${TAG_LINE_NUMBER}p" k8s_kustomize/overlays/staging/kustomization.yaml  |  cut --delimiter=":" --fields=2)
+          echo "tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Update deployment in Production
+    needs: get_staging_version
+    uses: equinor/armada/.github/workflows/update_kubernetes_deployment.yml@main
+    with:
+      environment: production
+      tag: ${{ needs.get_staging_version.outputs.versionTag }}
+      registry: auroraprodacr.azurecr.io
+      image_name: robotics/sara-rain-drop-detector
+      author_name: ${{ github.actor }}
+      infrastructure_repository: equinor/analytics-infrastructure
+    secrets:
+      deploy_key: ${{ secrets.ANALYTICS_INFRASTRUCTURE_DEPLOY_KEY }}

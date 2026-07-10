@@ -33,6 +33,8 @@ WORKDIR /app
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 COPY --chown=appuser:appuser . .
 
+RUN chown appuser:appuser /app
+
 USER 1000
 
 ENV PATH="/app/.venv/bin:$PATH" \

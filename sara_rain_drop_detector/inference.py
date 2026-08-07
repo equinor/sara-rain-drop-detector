@@ -28,7 +28,11 @@ def detect_rain(image_path: Path) -> bool:
         verbose=False,
     )
 
-    num_detections = sum(0 if r.boxes is None else len(r.boxes) for r in results)
+    num_detections = 0
+    for r in results:
+        boxes = getattr(r, "boxes", None)
+        if boxes is not None:
+            num_detections += len(boxes)
     logger.info(f"Inference produced {num_detections} detection(s)")
 
     return num_detections > 0

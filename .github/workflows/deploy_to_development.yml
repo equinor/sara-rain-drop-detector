@@ -34,19 +34,6 @@ jobs:
           SHA_SHORT=$(echo ${{ github.sha }} | cut -c1-8)
           echo "tag=$SHA_SHORT" >> "$GITHUB_OUTPUT"
 
-  build-and-push-components:
-    name: Build and push containers to acr for Development
-    needs: [trigger-github-deployment, get-short-sha]
-    uses: equinor/armada/.github/workflows/build_and_publish_docker_image_to_container_registry.yml@main
-    with:
-      registry: ghcr.io
-      image_name: ${{ github.repository }}
-      tag: "dev.${{ needs.get-short-sha.outputs.tag }}"
-      secondary_tag: latest
-    secrets:
-      registry_username: ${{ secrets.ROBOTICS_AURORADEVACR_USERNAME }}
-      registry_password: ${{ secrets.ROBOTICS_AURORADEVACR_PASSWORD }}
-
   build-and-push-components-to-ghcr:
     name: Build and push containers to github container registry for Development
     needs: [trigger-github-deployment, get-short-sha]

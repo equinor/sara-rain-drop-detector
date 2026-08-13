@@ -18,7 +18,7 @@ jobs:
     name: Build and push containers to auroraprodcr for Staging/Production
     uses: equinor/armada/.github/workflows/build_and_publish_docker_image_to_container_registry.yml@main
     with:
-      registry: auroraprodacr.azurecr.io
+      registry: roboticsstagingacr.azurecr.io
       image_name: robotics/sara-rain-drop-detector
       tag: ${{ github.event.release.tag_name }}
       secondary_tag: latest
@@ -44,7 +44,7 @@ jobs:
     uses: equinor/armada/.github/workflows/update_kubernetes_deployment.yml@main
     with:
       environment: staging
-      registry: auroraprodacr.azurecr.io
+      registry: roboticsstagingacr.azurecr.io
       image_name: robotics/sara-rain-drop-detector
       tag: ${{ github.event.release.tag_name }}
       author_name: ${{ github.event.release.author.login }}

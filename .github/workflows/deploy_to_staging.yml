@@ -1,41 +1,27 @@
 name: Deploy to Staging
 
-# Only one workflow in a concurrency group may run at a time
 concurrency:
   group: staging-concurrency
   cancel-in-progress: true
-
-permissions:
-  contents: read
-  packages: write
 
 on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  build-and-push-release-to-robotics-staging-registry:
-    name: Build and push containers to roboticsstagingacr for Staging
-    uses: equinor/armada/.github/workflows/build_and_publish_docker_image_to_container_registry.yml@main
+  deploy:
+    uses: equinor/armada/.github/workflows/deploy_to_staging.yml@main
     with:
       registry: roboticsstagingacr.azurecr.io
       image_name: robotics/sara-rain-drop-detector
       tag: ${{ github.event.release.tag_name }}
-      secondary_tag: latest
+      infrastructure_repository: equinor/analytics-infrastructure
+      author_name: ${{ github.event.release.author.login }}
     secrets:
       registry_username: ${{ secrets.ROBOTICS_ROBOTICSSTAGINGACR_USERNAME }}
       registry_password: ${{ secrets.ROBOTICS_ROBOTICSSTAGINGACR_PASSWORD }}
-
-  deploy:
-    name: Update deployment in Staging
-    needs: [build-and-push-release-to-robotics-staging-registry]
-    uses: equinor/armada/.github/workflows/update_kubernetes_deployment.yml@main
-    with:
-      environment: staging
-      registry: roboticsstagingacr.azurecr.io
-      image_name: robotics/sara-rain-drop-detector
-      tag: ${{ github.event.release.tag_name }}
-      author_name: ${{ github.event.release.author.login }}
-      infrastructure_repository: equinor/analytics-infrastructure
-    secrets:
       deploy_key: ${{ secrets.ANALYTICS_INFRASTRUCTURE_DEPLOY_KEY }}

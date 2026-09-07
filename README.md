@@ -18,7 +18,16 @@ To update the dependencies to the latest versions, run:
 uv lock --upgrade
 ```
 
-`torch` and `torchvision` are pinned to the CPU-only PyTorch index (configured under `[tool.uv.sources]`) to keep the runtime image small.
+On Linux, `torch` and `torchvision` use the CPU-only PyTorch index (configured under `[tool.uv.sources]`) to keep the runtime image small. Other platforms use PyPI.
+
+Update the exact `torch` and `torchvision` pins in `pyproject.toml` together: each torchvision release requires a matching torch release. Grouping them in Dependabot does not guarantee that its resolver updates both pins atomically. After selecting a compatible published pair, regenerate the lockfile with targeted upgrades:
+
+```bash
+uv lock --upgrade-package torch --upgrade-package torchvision --upgrade-package setuptools
+uv sync --locked --extra dev
+```
+
+Include `setuptools` when remediating its locked transitive dependency. Dependabot's uv updater can classify it as build-only because it also appears in `[build-system].requires`, then skip the lockfile update and fail with `No files have changed!`. A targeted lockfile upgrade remediates the installed version, but does not fix that upstream updater limitation. The build-system lower bound describes build compatibility; it does not pin the transitive runtime version.
 
 ### Setup
 

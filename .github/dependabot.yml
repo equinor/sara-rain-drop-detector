@@ -10,14 +10,10 @@ updates:
       day: monday
     open-pull-requests-limit: 5
     groups:
-      # Dependabot applies its native 3-day cooldown without explicit config.
-      python-patch-minor:
+      # Group all uv version updates together; Dependabot keeps its native cooldown.
+      python-dependencies:
         patterns: ["*"]
-        update-types: ["patch", "minor"]
-      # Review major updates together, separately from patch and minor updates.
-      python-major:
-        patterns: ["*"]
-        update-types: ["major"]
+        applies-to: version-updates
 
   - package-ecosystem: docker
     directory: /

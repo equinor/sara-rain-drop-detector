@@ -22,7 +22,7 @@ dependencies = [
     "typer",
     "ultralytics",
     "torch==2.14.0",
-    "torchvision==0.29.0",
+    "torchvision==0.29.1",
     "opentelemetry-api",
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp",

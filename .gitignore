@@ -39,6 +39,7 @@ coverage.xml
 
 # Runtime artefacts
 runs/
+data/
 *.log
 /tmp/
 

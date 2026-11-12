@@ -48,6 +48,7 @@ Run tests with `uv run pytest .`
 ```bash
 SOURCE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=ht ...
 DESTINATION_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=ht ...
+TRAINING_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=ht ...
 MODEL_PATH=/app/data/rain_detection_model.pt
 DETECTION_CONFIDENCE_THRESHOLD=0.25
 OTEL_SERVICE_NAME=sara-rain-drop-detector
@@ -70,6 +71,32 @@ The output file contains:
 ```json
 { "rain": true }
 ```
+
+## Training the model
+
+The model can be recreated locally with the scripts in `scripts/`. Training fine-tunes a pretrained Ultralytics YOLOv11 model (`yolo11m.pt` by default; override with `--base-model`) on the labeled dataset.
+
+### 1. Prepare the dataset (only needed when the dataset changes)
+
+Export the labeled data from Label Studio in **YOLO** format (`images/`, `labels/`, `classes.txt`), then split it into train/val/test. Images captured close together in time are kept in the same split to avoid leakage (`--group-gap`, in seconds, default 300):
+
+```bash
+python3 scripts/split_dataset.py --source /path/to/label-studio-export --output data/rain_dataset
+```
+
+Upload the resulting folder (`data.yaml`, `images/{train,val,test}`, `labels/{train,val,test}`) to the training container in Azure Blob Storage.
+
+### 2. Train
+
+Set `TRAINING_STORAGE_CONNECTION_STRING` in `.env` to the storage account's connection string, then run:
+
+```bash
+uv run python scripts/train_rain_model.py
+```
+
+Useful options: `--container` (default `rain-drop-training-dataset`), `--prefix`, `--epochs`, `--imgsz`, `--batch`, `--seed`, `--device`, `--skip-download`. Use `--epochs 1` for a quick smoke test.
+
+The dataset is downloaded to `data/rain_dataset`, training output goes to `runs/rain/train`, and the best weights are copied to `rain_detection_model.pt`. Training is seeded and deterministic, but results can still differ across hardware (CPU, MPS, CUDA).
 
 ## Docker
 
